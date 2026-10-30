@@ -388,6 +388,7 @@ function PublicHeader({
 }) {
   const { user, openDashboard, openSettings, signOut } = useContext(PublicAccountContext)
   const [accountMenuOpen, setAccountMenuOpen] = useState(false)
+  const [mobileNavOpen, setMobileNavOpen] = useState(false)
   const name = String(user?.user_metadata?.full_name ?? "").trim()
   const initials = name
     ? name.split(/\s+/).slice(0, 2).map((part) => part[0]).join("").toUpperCase()
@@ -428,27 +429,6 @@ function PublicHeader({
           </button>
         </nav>
         <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2 lg:ml-0">
-          <details className="relative shrink-0 lg:hidden">
-            <summary
-              className="icon-button list-none"
-              aria-label="Public navigation"
-            >
-              <Icon name="menu" size={18} />
-            </summary>
-            <nav className="absolute right-0 top-12 flex w-44 flex-col rounded-xl border border-line bg-white p-2 text-left text-sm shadow-lg">
-              {(["home", "strategies", "about", "contact"] as PublicPage[]).map(
-                (page) => (
-                  <button
-                    className="rounded-lg px-3 py-2.5 text-left capitalize hover:bg-[#edf1ec]"
-                    key={page}
-                    onClick={() => onNavigate(page)}
-                  >
-                    {page}
-                  </button>
-                ),
-              )}
-            </nav>
-          </details>
           {user ? (
             <div className="relative">
               <button
@@ -490,8 +470,59 @@ function PublicHeader({
               </Button>
             </>
           )}
+          <button
+            aria-expanded={mobileNavOpen}
+            aria-label={mobileNavOpen ? "Close public navigation" : "Open public navigation"}
+            className="icon-button shrink-0 lg:hidden"
+            onClick={() => setMobileNavOpen((open) => !open)}
+            type="button"
+          >
+            <Icon name={mobileNavOpen ? "close" : "menu"} size={18} />
+          </button>
         </div>
       </div>
+      {mobileNavOpen && (
+        <div
+          aria-label="Public navigation"
+          aria-modal="true"
+          className="fixed inset-0 z-[60] flex min-h-[100dvh] flex-col bg-[#f3f0e7] px-6 pb-[env(safe-area-inset-bottom)] pt-5 sm:px-10"
+          role="dialog"
+        >
+          <div className="flex items-center justify-between border-b border-line pb-5">
+            <Brand />
+            <button
+              aria-label="Close public navigation"
+              className="icon-button"
+              onClick={() => setMobileNavOpen(false)}
+              type="button"
+            >
+              <Icon name="close" size={18} />
+            </button>
+          </div>
+          <nav className="flex flex-1 flex-col justify-center gap-2 py-8" aria-label="Public pages">
+            {(["home", "strategies", "about", "contact"] as PublicPage[]).map((page, index) => (
+              <button
+                className="flex items-center justify-between border-b border-line py-4 text-left font-display text-3xl font-medium capitalize tracking-[-0.04em] text-forest transition hover:pl-2 sm:text-4xl"
+                key={page}
+                onClick={() => {
+                  setMobileNavOpen(false)
+                  onNavigate(page)
+                }}
+                type="button"
+              >
+                <span>{page}</span>
+                <span className="text-sm text-forest/40">0{index + 1}</span>
+              </button>
+            ))}
+          </nav>
+          {!user && (
+            <div className="flex flex-col gap-3 border-t border-line py-5 sm:flex-row">
+              <Button onClick={() => { setMobileNavOpen(false); onLogin() }} variant="secondary">Sign in</Button>
+              <Button onClick={() => { setMobileNavOpen(false); onOpenAccount() }}>Open an account <Icon name="arrow" size={16} /></Button>
+            </div>
+          )}
+        </div>
+      )}
     </header>
   )
 }
