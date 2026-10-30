@@ -21,6 +21,7 @@ import {
 import type { User } from "@supabase/supabase-js"
 
 import { supabase, supabaseConfigured } from "./lib/supabase-browser"
+import { dispatchOperationalEmails } from "./lib/operational-notifications"
 
 import { QRCodeSVG } from "qrcode.react"
 
@@ -2405,12 +2406,17 @@ function OverviewPage({
 
   requests: TransactionRequest[]
 }) {
-  const portfolioValue = positions.reduce(
-    (sum, item) => sum + Number(item.principal) + Number(item.accrued_gain),
+  const portfolioCurrency = positions[0]?.currency ?? "USD"
+  const totalPrincipalAndAccrued = positions.reduce(
+    (total, position) =>
+      total + Number(position.principal) + Number(position.accrued_gain),
     0,
   )
 
-  const portfolioCurrency = positions[0]?.currency ?? "USD"
+  const totalActiveAccrued = positions.reduce(
+    (total, position) => total + Number(position.accrued_gain),
+    0,
+  )
 
   const investorFirstName = String(user.user_metadata.full_name ?? "").trim().split(/\s+/)[0] || "Investor"
 
@@ -2454,11 +2460,10 @@ function OverviewPage({
           <div>
             <p className="text-sm text-white/55">Total portfolio value</p>
             <p className="mt-2 font-display text-4xl font-medium tracking-[-0.05em] sm:text-5xl">
-              {formatMoney(portfolioValue)}
+              {formatMoney(totalPrincipalAndAccrued)}
             </p>
             <p className="mt-3 text-xs font-medium text-[#a6d5af]">
-              Based on {positions.length} approved position
-              {positions.length === 1 ? "" : "s"}
+              Principal and accrued gains across active investments
             </p>
           </div>
           <div className="flex gap-2 self-start">
@@ -2540,17 +2545,12 @@ function OverviewPage({
           )}
         </section>
         <section className="dashboard-card">
-          <h2 className="dashboard-title">Accrued gains</h2>
+          <h2 className="dashboard-title">Accrued balance</h2>
           <p className="mt-4 font-display text-3xl font-semibold tracking-[-0.04em] text-forest">
-            {formatMoney(
-              positions.reduce(
-                (sum, item) => sum + Number(item.accrued_gain),
-                0,
-              ),
-            )}
+            {formatMoney(totalActiveAccrued)}
           </p>
           <p className="mt-1 text-xs text-ink/45">
-            Calculated from approved positions
+            Total accrued gains across active investments
           </p>
           <div className="mt-7 grid grid-cols-2 gap-2">
             <Button onClick={() => setPage("invest")}>Invest</Button>
@@ -2854,8 +2854,9 @@ function InvestPage({
     }
 
     setPaymentQuote(null)
-
-    setRequestId(typeof data === "string" ? data : data.request_id as string)
+    const createdRequestId = typeof data === "string" ? data : data.request_id as string
+    setRequestId(createdRequestId)
+    void dispatchOperationalEmails("transaction_request", createdRequestId)
 
     onPaymentSubmitted("Your payment quote is ready. Use the details shown on this page to complete payment.")
   }
@@ -2892,6 +2893,8 @@ function InvestPage({
 
       return
     }
+
+    void dispatchOperationalEmails("transaction_request", requestId)
 
     setPaymentQuote((current) => current ? {
       ...current,
@@ -3211,7 +3214,7 @@ function WithdrawPage({
 
     setSaving(true)
 
-    const { error: requestError } = await supabase.rpc(
+    const { data: requestId, error: requestError } = await supabase.rpc(
       "create_withdrawal_request",
       {
         p_amount: Number(amount),
@@ -3228,6 +3231,8 @@ function WithdrawPage({
       setError(requestError.message)
       return
     }
+
+    if (requestId) void dispatchOperationalEmails("transaction_request", requestId)
 
     onRequestComplete(
       "Withdrawal request submitted. It remains pending officer review.",
@@ -3839,6 +3844,7 @@ function ReviewQueuePage({ notify }: { notify: (message: string) => void }) {
       return
     }
 
+    void dispatchOperationalEmails("payout_method", method.id)
     notify(`Payout method marked ${status.replace(/_/g, " ")}.`)
 
     await refresh()
@@ -3877,6 +3883,8 @@ function ReviewQueuePage({ notify }: { notify: (message: string) => void }) {
       return
     }
 
+    void dispatchOperationalEmails("transaction_request", requestId)
+
     notify(
       `Request ${decision}. No bank or blockchain transfer was executed by this action.`,
     )
@@ -3896,6 +3904,7 @@ function ReviewQueuePage({ notify }: { notify: (message: string) => void }) {
       setError(paidError.message)
       return
     }
+    void dispatchOperationalEmails("transaction_request", requestId)
     notify("Payout recorded. The investor’s accrued balance now reflects the withdrawal.")
     await refresh()
   }
@@ -5049,7 +5058,7 @@ function SettingsPage({
         : methods.length === 0,
     }
 
-    const { error: saveError } = editingMethodId
+    const { data: savedMethod, error: saveError } = editingMethodId
       ? await supabase
           .from("payout_methods")
           .update({
@@ -5060,7 +5069,9 @@ function SettingsPage({
           })
           .eq("id", editingMethodId)
           .eq("user_id", user.id)
-      : await supabase.from("payout_methods").insert(payoutPayload)
+          .select("id")
+          .single()
+      : await supabase.from("payout_methods").insert(payoutPayload).select("id").single()
 
     setSaving(false)
 
@@ -5068,6 +5079,8 @@ function SettingsPage({
       setError(saveError.message)
       return
     }
+
+    if (savedMethod?.id) void dispatchOperationalEmails("payout_method", savedMethod.id)
 
     notify("Payout method submitted for investment officer verification.")
 
@@ -5573,6 +5586,20 @@ function Dashboard({
 
   useEffect(() => {
     void refreshInvestorData()
+    void dispatchOperationalEmails()
+    const channel = supabase?.channel(`investor-dashboard-${user.id}`)
+      .on("postgres_changes", {
+        event: "*",
+        schema: "public",
+        table: "transaction_requests",
+        filter: `user_id=eq.${user.id}`,
+      }, () => void refreshInvestorData())
+      .on("postgres_changes", {
+        event: "*",
+        schema: "public",
+        table: "investment_position_accruals_ledger",
+      }, () => void refreshInvestorData())
+      .subscribe()
     const refreshWhenVisible = () => {
       if (document.visibilityState === "visible") void refreshInvestorData()
     }
@@ -5583,6 +5610,7 @@ function Dashboard({
       window.clearInterval(interval)
       window.removeEventListener("focus", refreshWhenVisible)
       document.removeEventListener("visibilitychange", refreshWhenVisible)
+      if (channel) void supabase?.removeChannel(channel)
     }
   }, [pathname, user.id])
 
@@ -5597,6 +5625,7 @@ function Dashboard({
   function paymentSubmitted(message: string) {
     notify(message)
     void refreshInvestorData()
+    void dispatchOperationalEmails()
   }
 
   return (
@@ -6134,6 +6163,9 @@ function AppContent() {
     }
 
     const authClient = supabase
+    const protectedPath = () => window.location.pathname.startsWith("/app")
+
+    if (protectedPath()) setAuthLoading(true)
 
     const callbackUrl = new URL(window.location.href)
 
@@ -6186,6 +6218,8 @@ function AppContent() {
       data: { subscription },
     } = authClient.auth.onAuthStateChange((event, session) => {
       if (event === "SIGNED_OUT") {
+        setAuthUser(null)
+        setAuthLoading(false)
         verificationReturnRef.current = false
 
         try {
@@ -6198,29 +6232,54 @@ function AppContent() {
       }
 
       const user = session?.user ?? null
-
-      if (user?.email_confirmed_at) {
-        routeVerifiedUser(user)
-      } else {
+      if (!user) {
         setAuthUser(null)
-
-        if (user?.email) {
-          window.setTimeout(() => void authClient.auth.signOut(), 0)
-        }
+        setAuthLoading(false)
+        return
       }
 
+      if (!user.email_confirmed_at) {
+        setAuthUser(null)
+        setAuthLoading(false)
+        window.setTimeout(() => void authClient.auth.signOut(), 0)
+        return
+      }
+
+      if (event === "TOKEN_REFRESHED" || event === "INITIAL_SESSION" || event === "USER_UPDATED") {
+        void authClient.auth.getUser().then(({ data, error }) => {
+          if (!active) return
+          if (error || !data.user?.email_confirmed_at) {
+            setAuthUser(null)
+            setAuthLoading(false)
+            void authClient.auth.signOut()
+            return
+          }
+          setAuthUser(data.user)
+          setSelectedPlan(getUserPlan(data.user))
+          setAuthLoading(false)
+        })
+        return
+      }
+
+      routeVerifiedUser(user)
       setAuthLoading(false)
     })
 
-    void authClient.auth.getSession().then(({ data, error }) => {
+    void authClient.auth.getUser().then(({ data, error }) => {
       if (!active) return
 
-      const user = data.session?.user ?? null
+      const user = data.user ?? null
 
       if (!error && user?.email_confirmed_at) {
-        routeVerifiedUser(user)
+        if (protectedPath()) {
+          setAuthUser(user)
+          setSelectedPlan(getUserPlan(user))
+        } else {
+          routeVerifiedUser(user)
+        }
       } else {
         setAuthUser(null)
+        if (protectedPath()) setShowLogin(true)
       }
 
       setAuthLoading(false)

@@ -1,19 +1,24 @@
-# Acremont email templates
+# Email templates and delivery
 
-These responsive templates use a deep Acremont green header and footer, the cream wordmark, and the brand cream (`#F3F0E7`) for contrast. Set the public Supabase Site URL so the wordmark resolves at `/brand/acremont-full-cream.png`.
+The HTML and plain text files in this folder are branded references for welcome, login, verification, transaction and security messages. Authentication email templates are configured in Supabase under **Authentication → Email Templates**.
 
-## Auth templates
+Transaction and payout-method activity is sent by the Resend Edge Function. There is no Supabase dashboard slot for these application event templates: the actual responsive template is rendered in `supabase/functions/send-operational-email/_shared/operational-email-template.ts`. The database triggers in `supabase/migrations/202610300007_operational_email_outbox.sql` queue transaction creation/payment/status events and payout-method addition/edit/status/removal events. The dashboard invokes `send-operational-email` after user or officer actions and drains the signed-in user's pending queue on dashboard entry.
 
-- `welcome.html`: Supabase signup confirmation. Uses `{{ .Data.full_name }}`, `{{ .ConfirmationURL }}` and `{{ .SiteURL }}`.
-- `login.html`: Supabase magic-link sign-in. Uses `{{ .Data.full_name }}` and `{{ .ConfirmationURL }}`.
-- `verification.html`: Supabase one-time verification code. Uses `{{ .Data.full_name }}` and `{{ .Token }}`.
+## Setup
 
-Set the matching content in the Supabase Auth email template editor. Keep the action URLs and token expressions intact. The signup form stores the user name as `full_name`. Matching plain-text versions are included for all five messages.
+1. Apply all SQL migrations in filename order, including `202610300007_operational_email_outbox.sql`.
+2. Set Edge Function secrets:
 
-## Account notifications
+   ```sh
+   supabase secrets set RESEND_API_KEY=re_... RESEND_FROM_EMAIL="Acremont Finance <notifications@your-verified-domain>" APP_SITE_URL=https://acremontfinance.online
+   ```
 
-- `transaction.html`: send after a request status changes. Supply `first_name`, `transaction_type`, `status`, `amount`, `currency`, `reference`, `message`, `dashboard_url`, and `SiteURL`.
-- `security-action.html`: send after a password, email, or other security change. Supply `first_name`, `action`, `occurred_at`, `device`, `location`, `security_url`, and `SiteURL`.
+   `RESEND_API_KEY` is the Resend API key (also used as the SMTP password when configuring SMTP). Verify the sender domain/address in Resend first. Supabase's Auth SMTP settings do not send application transaction notifications.
 
-The transaction and security templates are ready for the project's chosen notification sender; they are not sent automatically by Supabase Auth. Keep subjects factual, include a matching plain-text alternative in the sender, and use the correct recipient event so users receive only relevant operational mail.
+3. Deploy the sender:
 
+   ```sh
+   supabase functions deploy send-operational-email
+   ```
+
+The outbox retries failed deliveries when the user or officer next opens the dashboard, up to five attempts. Emails intentionally omit bank account and crypto wallet details. Delivery status and errors are retained in the service-role-only `operational_email_outbox` table.
