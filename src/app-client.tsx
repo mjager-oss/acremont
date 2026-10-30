@@ -208,6 +208,17 @@ const phoneCountryOptions = getCountries()
   .sort((first, second) => first.label.localeCompare(second.label))
 
 const RegionContext = createContext<Region>("uk")
+const PublicAccountContext = createContext<{
+  user: User | null
+  openDashboard: () => void
+  openSettings: () => void
+  signOut: () => void
+}>({
+  user: null,
+  openDashboard: () => {},
+  openSettings: () => {},
+  signOut: () => {},
+})
 
 const companyDetails = {
   uk: {
@@ -375,6 +386,13 @@ function PublicHeader({
 
   onOpenAccount: () => void
 }) {
+  const { user, openDashboard, openSettings, signOut } = useContext(PublicAccountContext)
+  const [accountMenuOpen, setAccountMenuOpen] = useState(false)
+  const name = String(user?.user_metadata?.full_name ?? "").trim()
+  const initials = name
+    ? name.split(/\s+/).slice(0, 2).map((part) => part[0]).join("").toUpperCase()
+    : String(user?.email?.[0] ?? "A").toUpperCase()
+
   return (
     <header className="sticky top-0 z-30 border-b border-line bg-[#f3f0e7]/95 backdrop-blur-sm">
       <div className="site-shell flex h-[76px] items-center justify-between">
@@ -407,7 +425,7 @@ function PublicHeader({
             Contact
           </button>
         </nav>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2 sm:flex-nowrap">
           <details className="relative md:hidden">
             <summary
               className="icon-button list-none"
@@ -429,16 +447,45 @@ function PublicHeader({
               )}
             </nav>
           </details>
-          <Button
-            className="hidden sm:inline-flex"
-            onClick={onLogin}
-            variant="quiet"
-          >
-            Sign in
-          </Button>
-          <Button onClick={onOpenAccount}>
-            Open an account <Icon name="arrow" size={16} />
-          </Button>
+          {user ? (
+            <div className="relative">
+              <button
+                aria-expanded={accountMenuOpen}
+                aria-label="Open account menu"
+                className="flex h-10 items-center gap-2 rounded-full border border-line bg-white py-1 pl-1 pr-3 text-sm font-semibold text-forest transition hover:border-forest"
+                onClick={() => setAccountMenuOpen((open) => !open)}
+                type="button"
+              >
+                <span className="grid h-8 w-8 place-items-center rounded-full bg-forest text-xs text-white">{initials}</span>
+                <span className="hidden sm:inline">{name.split(/\s+/)[0] || "Account"}</span>
+                <Icon name="chevron" size={14} />
+              </button>
+              {accountMenuOpen && (
+                <div className="absolute right-0 top-12 z-50 w-56 rounded-xl border border-line bg-white p-2 shadow-xl" role="menu">
+                  <div className="border-b border-line px-3 py-2">
+                    <p className="truncate text-xs font-semibold text-forest">{name || "Your account"}</p>
+                    <p className="truncate text-[11px] text-ink/45">{user.email}</p>
+                  </div>
+                  <button className="w-full rounded-lg px-3 py-2.5 text-left text-xs hover:bg-[#edf1ec]" onClick={() => { setAccountMenuOpen(false); openDashboard() }} role="menuitem" type="button">Account overview</button>
+                  <button className="w-full rounded-lg px-3 py-2.5 text-left text-xs hover:bg-[#edf1ec]" onClick={() => { setAccountMenuOpen(false); openSettings() }} role="menuitem" type="button">Profile settings</button>
+                  <button className="w-full rounded-lg px-3 py-2.5 text-left text-xs text-[#8e3027] hover:bg-[#fff4f2]" onClick={() => { setAccountMenuOpen(false); signOut() }} role="menuitem" type="button">Sign out</button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <>
+              <Button
+                className="hidden sm:inline-flex"
+                onClick={onLogin}
+                variant="quiet"
+              >
+                Sign in
+              </Button>
+              <Button onClick={onOpenAccount}>
+                Open an account <Icon name="arrow" size={16} />
+              </Button>
+            </>
+          )}
         </div>
       </div>
     </header>
@@ -2439,15 +2486,15 @@ function OverviewPage({
         <div className="flex items-center gap-2">
           <button
             aria-label="Refresh dashboard values"
-            className="icon-button gap-2 px-3 text-xs font-semibold"
+            className="icon-button h-10 w-auto min-w-[7rem] gap-2 px-4 text-xs font-semibold disabled:cursor-wait disabled:opacity-60"
             disabled={refreshing}
-            onClick={onRefresh}
+            onClick={() => void onRefresh()}
             type="button"
           >
-            <span className={refreshing ? "animate-spin" : ""}>
+            <span className={refreshing ? "animate-spin" : ""} aria-hidden="true">
               <Icon name="refresh" size={15} />
             </span>
-            <span>{refreshing ? "Updating…" : "Refresh"}</span>
+            <span aria-live="polite">{refreshing ? "Updating…" : "Refresh"}</span>
           </button>
           <Button onClick={() => setPage("invest")}>
             Make an investment <Icon name="arrow" size={16} />
@@ -2470,12 +2517,18 @@ function OverviewPage({
             <button
               className="icon-button border-white/15 text-white hover:bg-white/10"
               aria-label="Show or hide balance"
+              aria-disabled="true"
+              disabled
+              title="Balance visibility control coming soon"
             >
               <Icon name="eye" size={17} />
             </button>
             <button
               className="icon-button border-white/15 text-white hover:bg-white/10"
               aria-label="Portfolio analytics"
+              aria-disabled="true"
+              disabled
+              title="Portfolio analytics coming soon"
             >
               <Icon name="chart" size={17} />
             </button>
@@ -2488,7 +2541,6 @@ function OverviewPage({
           </p>
         )}
       </section>
-
       <div className="mt-5 grid gap-5 lg:grid-cols-[1.25fr_.75fr]">
         <section className="dashboard-card">
           <div className="flex items-center justify-between">
@@ -5535,7 +5587,7 @@ function Dashboard({
     window.setTimeout(() => setToast(""), 3200)
   }
 
-  async function refreshInvestorData() {
+  async function refreshInvestorData(): Promise<void> {
     if (!supabase) {
       setDataError("Supabase is not configured.")
       setRefreshing(false)
@@ -5543,45 +5595,45 @@ function Dashboard({
     }
 
     setRefreshing(true)
+    try {
+      const [positionsResult, requestsResult, methodsResult] = await Promise.all([
+        supabase
+          .from("investment_position_accruals")
+          .select(
+            "id,principal,accrued_gain,currency,annual_rate_percent,term_months,starts_at",
+          )
+          .eq("user_id", user.id),
 
-    const [positionsResult, requestsResult, methodsResult] = await Promise.all([
-      supabase
-        .from("investment_position_accruals")
-        .select(
-          "id,principal,accrued_gain,currency,annual_rate_percent,term_months,starts_at",
-        )
-        .eq("user_id", user.id),
+        supabase
+          .from("transaction_requests")
+          .select("id,user_id,kind,amount,currency,status,payment_asset,payment_network,payment_quote_amount,payment_quote_expires_at,payment_tx_hash,payment_method,payment_reference,bank_payment_account_id,created_at,plan:investment_plans(name)")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false }),
 
-      supabase
-        .from("transaction_requests")
-        .select("id,user_id,kind,amount,currency,status,payment_asset,payment_network,payment_quote_amount,payment_quote_expires_at,payment_tx_hash,payment_method,payment_reference,bank_payment_account_id,created_at,plan:investment_plans(name)")
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false }),
+        supabase
+          .from("payout_methods")
+          .select("id,kind,label,details,status,is_default")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false }),
+      ])
 
-      supabase
-        .from("payout_methods")
-        .select("id,kind,label,details,status,is_default")
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false }),
-    ])
+      const firstError =
+        positionsResult.error ?? requestsResult.error ?? methodsResult.error
 
-    const firstError =
-      positionsResult.error ?? requestsResult.error ?? methodsResult.error
+      if (firstError) {
+        setDataError(firstError.message)
+        return
+      }
 
-    if (firstError) {
-      setDataError(firstError.message)
+      setDataError("")
+      setPositions((positionsResult.data ?? []) as PositionAccrual[])
+      setRequests((requestsResult.data ?? []) as unknown as TransactionRequest[])
+      setPayoutMethods((methodsResult.data ?? []) as PayoutMethod[])
+    } catch (error) {
+      setDataError(error instanceof Error ? error.message : "Dashboard values could not be refreshed.")
+    } finally {
       setRefreshing(false)
-      return
     }
-
-    setDataError("")
-
-    setPositions((positionsResult.data ?? []) as PositionAccrual[])
-
-    setRequests((requestsResult.data ?? []) as unknown as TransactionRequest[])
-
-    setPayoutMethods((methodsResult.data ?? []) as PayoutMethod[])
-    setRefreshing(false)
   }
 
   useEffect(() => {
@@ -5771,7 +5823,7 @@ function Dashboard({
               className="mb-6 border border-[#f0c7c2] bg-[#fff4f2] p-4 text-sm text-[#8e3027]"
               role="alert"
             >
-              Could not load your account data: {dataError}
+              Could not load or refresh your account data: {dataError}
             </div>
           )}
           {page === "overview" && (
@@ -6152,7 +6204,6 @@ function AppContent() {
       // Private browsing may disable storage; the session remains valid.
     }
 
-    setView("dashboard")
   }
 
   useEffect(() => {
@@ -6326,7 +6377,7 @@ function AppContent() {
     }
   }, [pathname])
 
-  function handleAuthenticated(user: User) {
+  function handleAuthenticated(user: User, routeToDashboard = true) {
     if (!user.email_confirmed_at) return
 
     acceptVerifiedUser(user)
@@ -6335,7 +6386,7 @@ function AppContent() {
 
     setSignInNotice("")
 
-    router.push(dashboardPath("overview"))
+    if (routeToDashboard) router.push(dashboardPath("overview"))
 
     window.scrollTo(0, 0)
   }
@@ -6452,6 +6503,14 @@ function AppContent() {
   )
 
   return (
+    <PublicAccountContext.Provider
+      value={{
+        user: authUser,
+        openDashboard: () => router.push(dashboardPath("overview")),
+        openSettings: () => router.push(`${dashboardPath("settings")}?tab=profile`),
+        signOut,
+      }}
+    >
     <>
       {pathname.startsWith("/app") ? (
         dashboardRoute
@@ -6477,11 +6536,12 @@ function AppContent() {
       {showLogin && (
         <LoginModal
           onClose={() => setShowLogin(false)}
-          onContinue={handleAuthenticated}
+          onContinue={(user) => handleAuthenticated(user, pathname.startsWith("/app"))}
           notice={signInNotice}
         />
       )}
     </>
+    </PublicAccountContext.Provider>
   )
 }
 
