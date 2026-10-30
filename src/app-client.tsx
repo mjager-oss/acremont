@@ -5718,10 +5718,38 @@ function Dashboard({
               </button>
             ))}
         </nav>
+        <nav aria-label="Public website" className="mt-4 border-t border-white/10 px-3 pt-4">
+          <p className="mb-2 px-3 text-[9px] font-semibold uppercase tracking-[0.14em] text-white/35">
+            Public site
+          </p>
+          {([
+            ["Home", "/"],
+            ["Strategies", "/strategies"],
+            ["About", "/about"],
+            ["Contact", "/contact"],
+          ] as const).map(([label, href]) => (
+            <button
+              className="sidebar-link text-white/65 hover:text-white"
+              key={href}
+              onClick={() => {
+                router.push(href)
+                setMobileNav(false)
+              }}
+              type="button"
+            >
+              {label}
+            </button>
+          ))}
+        </nav>
         <div className="border-t border-white/10 p-3">
           <div className="mb-2 flex items-center gap-3 px-3 py-3">
             <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-xs font-semibold text-white">
-              JD
+              {(user.user_metadata.full_name ?? user.email ?? "I")
+                .split(/[\s@]/)
+                .filter(Boolean)
+                .slice(0, 2)
+                .map((part: string) => part[0].toUpperCase())
+                .join("")}
             </span>
             <div className="min-w-0">
               <p className="truncate text-xs font-semibold text-white">
@@ -6536,7 +6564,7 @@ function AppContent() {
       {showLogin && (
         <LoginModal
           onClose={() => setShowLogin(false)}
-          onContinue={(user) => handleAuthenticated(user, pathname.startsWith("/app"))}
+          onContinue={(user) => handleAuthenticated(user, true)}
           notice={signInNotice}
         />
       )}
