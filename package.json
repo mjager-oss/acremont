@@ -1,15 +1,23 @@
 {
-  "name": "figma-make-app",
+  "name": "acremont-finance",
   "private": true,
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview",
+    "dev": "next dev --hostname 0.0.0.0 --port 8443",
+    "build": "next build",
+    "start": "next start --hostname 0.0.0.0",
     "format": "oxfmt"
   },
   "dependencies": {
+    "@fontsource-variable/ibm-plex-sans": "^5.3.0",
+    "@fontsource-variable/space-grotesk": "^5.3.0",
+    "@supabase/ssr": "^0.12.7",
+    "@supabase/supabase-js": "^2.118.0",
+    "@tailwindcss/postcss": "^4.3.3",
+    "libphonenumber-js": "^1.13.15",
+    "next": "^16.4.3",
+    "qrcode.react": "^4.2.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },
@@ -17,11 +25,8 @@
     "@types/node": "^22.0.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
-    "@vitejs/plugin-react": "^6.0.0",
-    "tailwindcss": "^4.0.0",
-    "@tailwindcss/vite": "^4.0.0",
     "oxfmt": "^0.2.0",
-    "typescript": "^5.7.0",
-    "vite": "^8.0.5"
+    "tailwindcss": "^4.0.0",
+    "typescript": "^5.7.0"
   }
 }
