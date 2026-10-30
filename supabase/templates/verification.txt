@@ -1,0 +1,19 @@
+Email verification
+
+Verify your email
+
+Hello {{ .Data.full_name }},
+
+Enter this one-time code to verify your email address in Acremont:
+
+{{ .Token }}
+
+This code is single-use. If you didn't request it, ignore this message.
+
+For your security, do not forward or share this verification code.
+
+
+Need support?
+support@acremontfinance.online
++1 (765) 216-5458
+120 Park Ave, New York, NY 10117, United States

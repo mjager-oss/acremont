@@ -1,0 +1,18 @@
+Your account
+
+Welcome to Acremont
+
+Hello {{ .Data.full_name }},
+
+Your account is ready. Confirm your email address to finish setting it up and access your investor dashboard.
+
+Confirm email address {{ .ConfirmationURL }} If the button doesn't work, copy this link into your browser:
+{{ .ConfirmationURL }} {{ .ConfirmationURL }}
+
+You received this message because an Acremont account was created with this email address. If you did not create it, you can ignore this email.
+
+
+Need support?
+support@acremontfinance.online
++1 (765) 216-5458
+120 Park Ave, New York, NY 10117, United States

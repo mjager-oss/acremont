@@ -1,0 +1,25 @@
+Account security
+
+Security activity on your account
+
+Hello {{ .Data.first_name }},
+
+{{ .Data.action }}
+
+Time: {{ .Data.occurred_at }}
+
+Device: {{ .Data.device }}
+
+Location: {{ .Data.location }}
+
+If you don't recognize this activity, review your account security and contact Acremont through the dashboard.
+
+Review account security {{ .Data.security_url }}
+
+Acremont will never ask for your password or one-time code by email. Do not reply with account credentials.
+
+
+Need support?
+support@acremontfinance.online
++1 (765) 216-5458
+120 Park Ave, New York, NY 10117, United States

@@ -1,0 +1,25 @@
+Transaction update
+
+Your request has an update
+
+Hello {{ .Data.first_name }},
+
+There is an update to your {{ .Data.transaction_type }} request.
+
+Status: {{ .Data.status }}
+
+Amount: {{ .Data.amount }} {{ .Data.currency }}
+
+Reference: {{ .Data.reference }}
+
+{{ .Data.message }}
+
+View your dashboard {{ .Data.dashboard_url }}
+
+This is an operational update about a request on your Acremont account. Payment status can change only after the relevant verification is complete.
+
+
+Need support?
+support@acremontfinance.online
++1 (765) 216-5458
+120 Park Ave, New York, NY 10117, United States

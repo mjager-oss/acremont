@@ -1,0 +1,17 @@
+Secure sign-in
+
+Your sign-in link
+
+Hello {{ .Data.full_name }},
+
+Use this one-time link to sign in to your Acremont account. It expires after use.
+
+Sign in securely {{ .ConfirmationURL }} If you didn't request a sign-in link, you can ignore this email. Your password has not changed.
+
+Acremont will never ask you to send your password or one-time code by email.
+
+
+Need support?
+support@acremontfinance.online
++1 (765) 216-5458
+120 Park Ave, New York, NY 10117, United States
