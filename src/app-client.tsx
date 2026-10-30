@@ -395,11 +395,13 @@ function PublicHeader({
 
   return (
     <header className="sticky top-0 z-30 border-b border-line bg-[#f3f0e7]/95 backdrop-blur-sm">
-      <div className="site-shell flex h-[76px] items-center justify-between">
-        <button onClick={() => onNavigate("home")} aria-label="Acremont home">
+      <div className="site-shell flex min-h-[68px] items-center justify-between gap-2 py-2 md:h-[76px] md:py-0">
+        <button className="min-w-0 shrink" onClick={() => onNavigate("home")} aria-label="Acremont home">
+          <span className="block [&_img]:w-[clamp(8rem,40vw,10.875rem)]">
           <Brand />
+          </span>
         </button>
-        <nav className="hidden items-center gap-8 text-sm text-ink/65 md:flex">
+        <nav className="hidden shrink-0 items-center gap-5 text-sm text-ink/65 lg:flex xl:gap-8">
           <button
             className="transition-colors hover:text-forest"
             onClick={() => onNavigate("home")}
@@ -425,8 +427,8 @@ function PublicHeader({
             Contact
           </button>
         </nav>
-        <div className="flex flex-wrap items-center gap-2 sm:flex-nowrap">
-          <details className="relative md:hidden">
+        <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2 lg:ml-0">
+          <details className="relative shrink-0 lg:hidden">
             <summary
               className="icon-button list-none"
               aria-label="Public navigation"
@@ -481,8 +483,10 @@ function PublicHeader({
               >
                 Sign in
               </Button>
-              <Button onClick={onOpenAccount}>
-                Open an account <Icon name="arrow" size={16} />
+              <Button className="shrink-0 px-2.5 text-[11px] sm:px-4 sm:text-xs" onClick={onOpenAccount}>
+                <span className="sm:hidden">Join</span>
+                <span className="hidden sm:inline">Open an account</span>
+                <Icon name="arrow" size={15} />
               </Button>
             </>
           )}
@@ -1349,6 +1353,7 @@ function AboutPage({
 
 function SignupPage({
   initialPlan,
+  referralCode,
 
   onLogin,
 
@@ -1363,6 +1368,7 @@ function SignupPage({
   onNavigateToSignIn,
 }: {
   initialPlan: string
+  referralCode: string
 
   onLogin: () => void
 
@@ -1553,6 +1559,8 @@ function SignupPage({
             phone: internationalPhone,
 
             selected_plan: selectedPlan,
+
+            referral_code: (new URLSearchParams(window.location.search).get("ref") || referralCode).trim().toLowerCase(),
           },
         },
       })
@@ -3445,7 +3453,10 @@ function ReviewQueuePage({ notify }: { notify: (message: string) => void }) {
   const [profiles, setProfiles] = useState<Record<string, {
     full_name: string
     email: string
+    referred_by: string | null
   }>>({})
+
+  const [referralCode, setReferralCode] = useState("")
 
   const [wallets, setWallets] = useState<CryptoWallet[]>([])
 
@@ -3536,7 +3547,7 @@ function ReviewQueuePage({ notify }: { notify: (message: string) => void }) {
         .select("*,plan:investment_plans(name)")
         .order("created_at", { ascending: false }),
 
-      supabase.from("investor_profiles").select("user_id,full_name,email"),
+      supabase.from("investor_profiles").select("user_id,full_name,email,referred_by"),
 
       supabase
         .from("crypto_wallets")
@@ -3593,6 +3604,13 @@ function ReviewQueuePage({ notify }: { notify: (message: string) => void }) {
 
   useEffect(() => {
     void refresh()
+  }, [])
+
+  useEffect(() => {
+    if (!supabase) return
+    void supabase.rpc("get_my_referral_code").then(({ data, error: referralError }) => {
+      if (!referralError && typeof data === "string") setReferralCode(data)
+    })
   }, [])
 
   async function loadAccrualData() {
@@ -4447,6 +4465,17 @@ function ReviewQueuePage({ notify }: { notify: (message: string) => void }) {
       )}
 
       {tab === "requests" && (
+        <>
+        <section className="dashboard-card mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h2 className="dashboard-title">Your investor referral link</h2>
+            <p className="mt-1 text-xs text-ink/50">New customers who sign up through this link will be attributed to your agent account.</p>
+          </div>
+          <div className="flex min-w-0 gap-2">
+            <input className="field-input min-w-0 flex-1 text-xs" aria-label="Referral link" readOnly value={referralCode ? `https://acremontfinance.online/?ref=${referralCode}` : "Preparing referral link…"} />
+            <Button disabled={!referralCode} onClick={() => { void navigator.clipboard.writeText(`https://acremontfinance.online/?ref=${referralCode}`).then(() => notify("Referral link copied."), () => notify("Could not copy link. Select and copy it manually.")) }} variant="secondary">Copy</Button>
+          </div>
+        </section>
         <div className="grid gap-5 lg:grid-cols-[260px_1fr]">
           <section className="dashboard-card self-start">
             <h2 className="dashboard-title">Investors</h2>
@@ -4481,6 +4510,18 @@ function ReviewQueuePage({ notify }: { notify: (message: string) => void }) {
             </div>
           </section>
           <section className="dashboard-card">
+            {currentUserId && (
+              <div className="mb-4 rounded-lg bg-[#edf1ec] p-3">
+                <p className="text-[10px] font-semibold uppercase tracking-wide text-ink/45">Referral agent</p>
+                {profiles[currentUserId]?.referred_by ? (
+                  <p className="mt-1 text-sm font-semibold text-forest">
+                    {profiles[profiles[currentUserId].referred_by!]?.full_name || profiles[profiles[currentUserId].referred_by!]?.email || "Agent account"}
+                  </p>
+                ) : (
+                  <p className="mt-1 text-sm text-ink/55">No referral agent recorded</p>
+                )}
+              </div>
+            )}
             <h2 className="dashboard-title">Transaction requests</h2>
             {currentRequests.length === 0 ? (
               <p className="mt-4 text-sm text-ink/50">
@@ -4764,6 +4805,7 @@ function ReviewQueuePage({ notify }: { notify: (message: string) => void }) {
             )}
           </section>
         </div>
+        </>
       )}
     </>
   )
@@ -5697,7 +5739,7 @@ function Dashboard({
             <Icon name="close" />
           </button>
         </div>
-        <nav className="mt-4 flex-1 px-3">
+        <nav className="mt-4 min-h-0 flex-1 overflow-y-auto px-3">
           {navItems
 
             .filter((item) => item.page !== "review" || isInvestmentOfficer)
@@ -5718,7 +5760,7 @@ function Dashboard({
               </button>
             ))}
         </nav>
-        <nav aria-label="Public website" className="mt-4 border-t border-white/10 px-3 pt-4">
+        <nav aria-label="Public website" className="shrink-0 border-t border-white/10 px-3 pt-3">
           <p className="mb-2 px-3 text-[9px] font-semibold uppercase tracking-[0.14em] text-white/35">
             Public site
           </p>
@@ -6205,6 +6247,8 @@ function AppContent() {
 
   const [selectedPlan, setSelectedPlan] = useState("")
 
+  const [referralCode, setReferralCode] = useState("")
+
   const [showInvestmentTutorial, setShowInvestmentTutorial] = useState(false)
 
   const [authUser, setAuthUser] = useState<User | null>(null)
@@ -6214,6 +6258,11 @@ function AppContent() {
   const [signInNotice, setSignInNotice] = useState("")
 
   const verificationReturnRef = useRef(false)
+
+  useEffect(() => {
+    const code = new URLSearchParams(window.location.search).get("ref")
+    if (code && /^[a-z0-9]{8,24}$/i.test(code)) setReferralCode(code.toLowerCase())
+  }, [pathname])
 
   function acceptVerifiedUser(user: User) {
     setAuthUser(user)
@@ -6488,7 +6537,7 @@ function AppContent() {
 
     setShowLogin(false)
 
-    setView("signup")
+    router.push(referralCode ? `/signup?ref=${encodeURIComponent(referralCode)}` : "/signup")
 
     window.scrollTo(0, 0)
   }
@@ -6545,6 +6594,7 @@ function AppContent() {
       ) : pathname === "/signup" ? (
         <SignupPage
           initialPlan={selectedPlan}
+          referralCode={referralCode}
           onLogin={openLogin}
           onNavigate={navigatePublic}
           onOpenAccount={() => openAccount()}
