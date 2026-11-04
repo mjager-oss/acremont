@@ -538,16 +538,22 @@ function PublicFooter({
 
   return (
     <footer className="bg-forest py-12 text-white">
-      <div className="site-shell flex flex-col gap-9">
-        <div className="grid gap-10 border-b border-white/12 pb-10 md:grid-cols-[1fr_auto_auto]">
-          <Brand light />
-          <div className="flex flex-wrap gap-x-7 gap-y-3 text-xs text-white/55 md:max-w-72">
-            <button onClick={() => onNavigate("strategies")}>Strategies</button>
-            <button onClick={() => onNavigate("about")}>About</button>
-            <button onClick={() => onNavigate("contact")}>Contact</button>
-            <a href="mailto:support@acremontfinance.online">Support</a>
+      <div className="site-shell flex flex-col gap-7 sm:gap-9">
+        <div className="grid gap-8 border-b border-white/12 pb-8 sm:grid-cols-2 sm:gap-x-10 sm:gap-y-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(16rem,1fr)_auto] lg:items-start lg:gap-12 lg:pb-10">
+          <div className="sm:pt-1">
+            <Brand light />
           </div>
-          <address className="text-xs not-italic leading-6 text-white/50">
+          <nav aria-label="Footer" className="grid grid-cols-2 gap-x-8 gap-y-3 text-xs text-white/60 sm:gap-x-10">
+            <p className="col-span-2 mb-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-white/35">Explore Acremont</p>
+            <button className="text-left transition-colors hover:text-white" onClick={() => onNavigate("strategies")}>Strategies</button>
+            <button className="text-left transition-colors hover:text-white" onClick={() => onNavigate("about")}>About</button>
+            <button className="text-left transition-colors hover:text-white" onClick={() => onNavigate("contact")}>Contact</button>
+            <a className="transition-colors hover:text-white" href="/privacy">Privacy policy</a>
+            <a className="transition-colors hover:text-white" href="/notices">Notices</a>
+            <a className="transition-colors hover:text-white" href="mailto:support@acremontfinance.online">Support</a>
+          </nav>
+          <address className="text-xs not-italic leading-6 text-white/50 sm:col-span-2 lg:col-span-1 lg:justify-self-end">
+            <span className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.16em] text-white/35">Regional office</span>
             <a className="block text-white/75" href={`tel:${office.telephone}`}>
               {office.phone}
             </a>
@@ -558,7 +564,7 @@ function PublicFooter({
             ))}
           </address>
         </div>
-        <div className="flex flex-col justify-between gap-3 text-[10px] leading-5 text-white/35 sm:flex-row">
+        <div className="flex flex-col justify-between gap-2 text-[10px] leading-5 text-white/35 sm:flex-row sm:items-center sm:gap-6">
           <p>
             © {new Date().getFullYear()} Acremont Investments. All rights
             reserved.
@@ -1374,6 +1380,27 @@ function AboutPage({
             Transaction requests remain subject to review. Investment returns
             are not guaranteed and capital is at risk.
           </p>
+        </div>
+      </section>
+
+      <section className="bg-[#e9e5d9] py-20 lg:py-24">
+        <div className="site-shell grid gap-8 lg:grid-cols-[.72fr_1.28fr]">
+          <div>
+            <p className="section-label">Our group</p>
+            <h2 className="mt-4 font-display text-4xl tracking-[-0.045em] text-forest">
+              A group of focused businesses.
+            </h2>
+          </div>
+          <div className="space-y-5 text-base leading-8 text-ink/58">
+            <p>
+              Henry Charles Investment, Mark Stone Finances, Ashbourne Capital Holdings, Northbridge Financial Holdings, Sterling Crest Group, Westhaven Capital Partners, and Mercado Investment are subsidiaries of Acremont.
+            </p>
+            <ul className="grid gap-3 sm:grid-cols-2">
+              {["Northbridge Financial Holdings", "Mercado Investment", "Henry Charles Investment", "Westhaven Capital Partners", "Mark Stone Finances", "Ashbourne Capital Holdings", "Sterling Crest Group"].map((company) => (
+                <li className="rounded-xl border border-forest/10 bg-white/55 px-4 py-3 text-sm text-forest" key={company}>{company}</li>
+              ))}
+            </ul>
+          </div>
         </div>
       </section>
 
@@ -2428,6 +2455,83 @@ function ContactPage({
             </p>
           </form>
         </div>
+      </section>
+    </PublicPageLayout>
+  )
+}
+
+function PrivacyPolicyPage({ onLogin, onNavigate, onOpenAccount }: {
+  onLogin: () => void
+  onNavigate: (page: PublicPage) => void
+  onOpenAccount: () => void
+}) {
+  const sections = [
+    ["Information we collect", "When you create or use an account, we may process your name, email address, telephone number, authentication and account details, investment instructions, transaction and payout information, and messages you send to support. We also receive technical information needed to operate and protect the site, such as device, browser, and security log data."],
+    ["How we use information", "We use information to create and secure accounts, verify email addresses, respond to support requests, process and review investment or withdrawal instructions, maintain records, prevent fraud and misuse, meet applicable legal obligations, and operate and improve the service."],
+    ["Our reasons for processing", "Depending on the purpose and the law that applies to you, we process information to provide the account or service you request, meet legal obligations, pursue legitimate interests such as protecting the service and keeping records, or with your consent where consent is required. You can contact us to ask which basis applies to a particular use."],
+    ["When information is shared", "We share information with service providers that host the site, support authentication, deliver operational email, or help process and review transactions. We may also disclose information when required by law, to protect users or the service, or as part of a corporate transaction. Access is limited to what is needed for the relevant purpose."],
+    ["Retention and security", "We keep information for as long as needed to provide the service, maintain account and financial records, resolve disputes, protect the service, and meet legal requirements. Retention periods depend on the type of record and the reason it is held. We use access controls and other safeguards, but no online service can guarantee absolute security."],
+    ["Cookies and similar technologies", "The site uses technologies needed to support sign-in, maintain a secure session, and remember essential service state. Your browser may let you manage cookies and local storage; blocking them can prevent account features from working."],
+    ["Your choices and rights", "Depending on where you live, you may have rights to request access to, correction or deletion of your personal information, to object to or restrict certain processing, or to request a portable copy. Some records must be retained for legal, security, or transaction purposes. Contact us to make a request; we may need to verify your identity."],
+    ["International processing and children", "Our service providers may process information in countries other than yours. Where required, appropriate safeguards will apply to international transfers. The service is intended for adults and is not designed for children."],
+    ["Who is responsible and contact", "Acremont is responsible for the personal information described in this policy. If a specific Acremont group company provides your service, that company may be responsible for the information it handles. Regional office contact details are listed on our Contact page. We may update this policy when our practices or services change; the current version will be posted here with its latest revision date. For privacy questions or requests, email support@acremontfinance.online."],
+  ]
+
+  return (
+    <PublicPageLayout onLogin={onLogin} onNavigate={onNavigate} onOpenAccount={onOpenAccount}>
+      <section className="site-shell py-16 sm:py-20 lg:py-24">
+        <p className="section-label">Privacy</p>
+        <h1 className="mt-4 max-w-4xl font-display text-[clamp(3rem,6vw,5.5rem)] leading-[0.98] tracking-[-0.06em] text-forest">Privacy policy</h1>
+        <p className="mt-5 text-sm text-ink/50">Last updated November 4, 2026</p>
+        <p className="mt-8 max-w-3xl text-lg leading-8 text-ink/65">This policy explains how Acremont handles information when you visit our website or use an investor account.</p>
+        <div className="mt-12 max-w-4xl divide-y divide-forest/10 border-y border-forest/10">
+          {sections.map(([title, copy], index) => (
+            <section className="grid gap-3 py-7 sm:grid-cols-[3rem_1fr]" key={title}>
+              <span className="pt-1 text-xs text-forest/40">0{index + 1}</span>
+              <div><h2 className="font-display text-2xl tracking-[-0.03em] text-forest">{title}</h2><p className="mt-3 text-sm leading-7 text-ink/60">{copy}</p></div>
+            </section>
+          ))}
+        </div>
+      </section>
+    </PublicPageLayout>
+  )
+}
+
+function NoticesPage({ onLogin, onNavigate, onOpenAccount }: {
+  onLogin: () => void
+  onNavigate: (page: PublicPage) => void
+  onOpenAccount: () => void
+}) {
+  return (
+    <PublicPageLayout onLogin={onLogin} onNavigate={onNavigate} onOpenAccount={onOpenAccount}>
+      <section className="site-shell py-16 sm:py-20 lg:py-24">
+        <p className="section-label">Company information</p>
+        <h1 className="mt-4 max-w-4xl font-display text-[clamp(3rem,6vw,5.5rem)] leading-[0.98] tracking-[-0.06em] text-forest">Legal notices</h1>
+        <p className="mt-6 max-w-3xl text-lg leading-8 text-ink/60">Important information about Acremont, its group companies, and the investment information on this site.</p>
+        <div className="mt-12 grid max-w-5xl gap-6 md:grid-cols-2">
+          <article className="rounded-2xl border border-forest/10 bg-white/55 p-7 sm:p-9">
+            <p className="section-label">Group structure</p>
+            <h2 className="mt-3 font-display text-2xl text-forest">Acremont subsidiaries</h2>
+            <p className="mt-4 text-sm leading-7 text-ink/60">Acremont’s subsidiary companies extend its work across investment, financial holdings, and capital partnerships. Together, they form part of the group’s broader investment platform.</p>
+            <p className="mt-4 text-xs font-medium text-ink/45">The following companies are subsidiaries of Acremont:</p>
+            <ul className="mt-5 space-y-2 text-sm text-forest">
+              {["Sterling Crest Group", "Ashbourne Capital Holdings", "Mark Stone Finances", "Mercado Investment", "Henry Charles Investment", "Northbridge Financial Holdings", "Westhaven Capital Partners"].map((company) => <li className="rounded-lg border border-forest/10 px-4 py-3" key={company}>{company}</li>)}
+            </ul>
+          </article>
+          <div className="space-y-6">
+            <article className="rounded-2xl border border-forest/10 bg-white/55 p-7 sm:p-9">
+              <p className="section-label">Investment risk</p>
+              <h2 className="mt-3 font-display text-2xl text-forest">Capital is at risk</h2>
+              <p className="mt-4 text-sm leading-7 text-ink/60">Investments can fall as well as rise in value, and you may receive less than you invest. Target or illustrative returns are not guaranteed. Information on this site is general and does not account for your personal circumstances. Consider whether an investment is suitable and seek independent advice if needed.</p>
+            </article>
+            <article className="rounded-2xl border border-forest/10 bg-white/55 p-7 sm:p-9">
+              <p className="section-label">Site information</p>
+              <h2 className="mt-3 font-display text-2xl text-forest">Accuracy and availability</h2>
+              <p className="mt-4 text-sm leading-7 text-ink/60">Website content is provided for general information and may change without notice. Account-specific terms and transaction status are shown in the investor account and remain subject to review and applicable agreements. Nothing on this site is a personal recommendation or an offer where making one would be unlawful.</p>
+            </article>
+          </div>
+        </div>
+        <p className="mt-8 text-xs leading-6 text-ink/45">For privacy information, read our <a className="underline underline-offset-4" href="/privacy">Privacy policy</a>. For questions, contact <a className="underline underline-offset-4" href="mailto:support@acremontfinance.online">support@acremontfinance.online</a>.</p>
       </section>
     </PublicPageLayout>
   )
@@ -6639,6 +6743,10 @@ function AppContent() {
         <AboutPage {...publicActions} />
       ) : pathname === "/contact" ? (
         <ContactPage {...publicActions} />
+      ) : pathname === "/privacy" ? (
+        <PrivacyPolicyPage {...publicActions} />
+      ) : pathname === "/notices" ? (
+        <NoticesPage {...publicActions} />
       ) : (
         <PublicHome {...publicActions} onPlan={(plan) => openAccount(plan)} />
       )}
