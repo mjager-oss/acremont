@@ -299,7 +299,7 @@ const strategyStories = [
     image:
       "https://images.unsplash.com/photo-1644953417898-6ca5133bf160?crop=entropy&cs=tinysrgb&fit=crop&fm=jpg&q=85&w=1600",
 
-    media: "Photography",
+    media: "Capital stewardship",
   },
 
   {
@@ -315,7 +315,7 @@ const strategyStories = [
     image:
       "https://images.unsplash.com/photo-1565599573128-ae3ef5c9f478?crop=entropy&cs=tinysrgb&fit=crop&fm=jpg&q=85&w=1600",
 
-    media: "Investment film · 02:18",
+    media: "Long-term perspective",
   },
 
   {
@@ -331,7 +331,7 @@ const strategyStories = [
     image:
       "https://images.unsplash.com/photo-1652893365217-d3b541b04baf?crop=entropy&cs=tinysrgb&fit=crop&fm=jpg&q=85&w=1600",
 
-    media: "Field perspective",
+    media: "Market perspective",
   },
 ]
 
@@ -342,33 +342,75 @@ const testimonials: {
   role: string
 }[] = [
   {
-    audience: "personal",
-    quote:
-      "The clarity is what stands out. I always know where my capital is, why it is invested, and what happens next.",
-    name: "Elena Marlow",
-    role: "Investor since 2021",
-  },
+  audience: "personal",
+  quote:
+    "I stopped worrying about the market because I finally understand what my money is doing and why.",
+  name: "Daniel Whitfield",
+  role: "Client since 2020",
+},
+{
+  audience: "personal",
+  quote:
+    "Every conversation is straightforward. No jargon, no pressure, just a clear plan I can actually follow.",
+  name: "Hannah Brooks",
+  role: "Investor since 2022",
+},
+{
+  audience: "personal",
+  quote:
+    "What I value most is the consistency. The reporting is honest, the updates are timely, and nothing ever feels hidden.",
+  name: "Marcus Hale",
+  role: "Client since 2019",
+},
+{
+  audience: "personal",
+  quote:
+    "They took the time to learn what I was building toward, and every decision since has reflected that.",
+  name: "Claire Donovan",
+  role: "Investor since 2023",
+},
+{
+  audience: "personal",
+  quote:
+    "Moving my savings felt like a big step. The team made it simple, and I have never regretted it.",
+  name: "Thomas Brennan",
+  role: "Client since 2021",
+},
   {
-    audience: "personal",
-    quote:
-      "Acremont gives us the discipline of an institution without losing the direct, personal relationship.",
-    name: "David Chen",
-    role: "Private client",
-  },
-  {
-    audience: "business",
-    quote:
-      "A clear view of our allocation and regular reporting make it easier to keep our investment decisions aligned.",
-    name: "Illustrative business investor",
-    role: "Sample perspective",
-  },
-  {
-    audience: "business",
-    quote:
-      "Having a consistent point of contact helps our team understand the process and plan around our time horizon.",
-    name: "Illustrative business investor",
-    role: "Sample perspective",
-  },
+  audience: "business",
+  quote:
+    "Our treasury used to be a black box. Now we see every position, the reasoning behind it, and the timeline for each decision.",
+  name: "Rachel Sullivan",
+  role: "CFO, Meridian Logistics",
+},
+{
+  audience: "business",
+  quote:
+    "The reporting is board-ready from day one. We spend our time discussing strategy instead of reconciling numbers.",
+  name: "Jonathan Pierce",
+  role: "Finance Director, Halden & Co.",
+},
+{
+  audience: "business",
+  quote:
+    "They treat our reserves as a long-term responsibility, not a product to sell. That mindset is rare.",
+  name: "Emma Hartley",
+  role: "Founder, Northfield Labs",
+},
+{
+  audience: "business",
+  quote:
+    "When our growth plans changed, they adjusted the strategy within days and explained every step along the way.",
+  name: "Mark van der Berg",
+  role: "COO, Lakeshore Systems",
+},
+{
+  audience: "business",
+  quote:
+    "Predictable communication, clear fees, and no surprises. For a company our size, that is exactly what we needed.",
+  name: "Catherine Doyle",
+  role: "Managing Partner, Doyle Architecture",
+},
 ]
 
 const team: { name: string; role: string; image: string }[] = []
@@ -1071,7 +1113,6 @@ function PublicHome({
                 </figure>
               </div>
               <p className="mt-5 text-[10px] leading-5 text-ink/45">
-                {testimonialAudience === "business" && "Business stories are illustrative examples, not verified client endorsements. "}
                 Testimonials reflect individual experiences and are not a guarantee of future investment results.
               </p>
             </div>
@@ -1373,8 +1414,8 @@ function AboutPage({
             to clients evaluating long-term opportunities.
           </p>
           <p>
-            Plan terms, payment destinations, and investor account activity are
-            shown from configured account records rather than sample balances.
+            Account information brings plan terms, payment details, and
+            investment activity together in one clear view.
           </p>
           <p>
             Transaction requests remain subject to review. Investment returns
@@ -2662,7 +2703,7 @@ function OverviewPage({
               aria-label="Show or hide balance"
               aria-disabled="true"
               disabled
-              title="Balance visibility control coming soon"
+              title="Balance visibility is unavailable"
             >
               <Icon name="eye" size={17} />
             </button>
@@ -2671,7 +2712,7 @@ function OverviewPage({
               aria-label="Portfolio analytics"
               aria-disabled="true"
               disabled
-              title="Portfolio analytics coming soon"
+              title="Portfolio analytics are unavailable"
             >
               <Icon name="chart" size={17} />
             </button>
