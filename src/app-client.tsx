@@ -297,9 +297,11 @@ const strategyStories = [
     allocation: "Global fixed income · Real assets",
 
     image:
-      "https://images.unsplash.com/photo-1644953417898-6ca5133bf160?crop=entropy&cs=tinysrgb&fit=crop&fm=jpg&q=85&w=1600",
+      "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?crop=entropy&cs=tinysrgb&fit=crop&fm=jpg&q=85&w=1600",
 
-    media: "Capital stewardship",
+    imageAlt: "Contemporary commercial buildings representing long-term real asset investment",
+
+    media: "Income-producing real assets",
   },
 
   {
@@ -313,9 +315,11 @@ const strategyStories = [
     allocation: "Public equity · Private markets",
 
     image:
-      "https://images.unsplash.com/photo-1565599573128-ae3ef5c9f478?crop=entropy&cs=tinysrgb&fit=crop&fm=jpg&q=85&w=1600",
+      "https://images.unsplash.com/photo-1509391366360-2e959784a276?crop=entropy&cs=tinysrgb&fit=crop&fm=jpg&q=85&w=1600",
 
-    media: "Long-term perspective",
+    imageAlt: "Solar panels in a renewable energy installation",
+
+    media: "Renewable energy infrastructure",
   },
 
   {
@@ -329,9 +333,11 @@ const strategyStories = [
     allocation: "Special situations · Alternatives",
 
     image:
-      "https://images.unsplash.com/photo-1652893365217-d3b541b04baf?crop=entropy&cs=tinysrgb&fit=crop&fm=jpg&q=85&w=1600",
+      "https://images.unsplash.com/photo-1494412519320-aa613dfb7738?crop=entropy&cs=tinysrgb&fit=crop&fm=jpg&q=85&w=1600",
 
-    media: "Market perspective",
+    imageAlt: "Cargo containers at a busy international port",
+
+    media: "Global trade and logistics",
   },
 ]
 
@@ -413,6 +419,17 @@ const testimonials: {
 },
 ]
 
+const acremontSubsidiaries = [
+  "Northbridge Financial Holdings",
+  "Mercado Investment",
+  "Henry Charles Investment",
+  "Westhaven Capital Partners",
+  "Mark Stone Finances",
+  "Ashbourne Capital Holdings",
+  "Sterling Crest Group",
+  "Amber Phillips Holdings",
+]
+
 const team: { name: string; role: string; image: string }[] = []
 
 function PublicHeader({
@@ -462,6 +479,12 @@ function PublicHeader({
             onClick={() => onNavigate("about")}
           >
             About
+          </button>
+          <button
+            className="transition-colors hover:text-forest"
+            onClick={() => onNavigate("community")}
+          >
+            Community
           </button>
           <button
             className="transition-colors hover:text-forest"
@@ -542,7 +565,7 @@ function PublicHeader({
             </button>
           </div>
           <nav className="flex flex-1 flex-col justify-center gap-2 py-8" aria-label="Public pages">
-            {(["home", "strategies", "about", "contact"] as PublicPage[]).map((page, index) => (
+            {(["home", "strategies", "about", "community", "contact"] as PublicPage[]).map((page, index) => (
               <button
                 className="flex items-center justify-between border-b border-line py-4 text-left font-display text-3xl font-medium capitalize tracking-[-0.04em] text-forest transition hover:pl-2 sm:text-4xl"
                 key={page}
@@ -552,7 +575,7 @@ function PublicHeader({
                 }}
                 type="button"
               >
-                <span>{page}</span>
+                <span>{page === "community" ? "Community" : page}</span>
                 <span className="text-sm text-forest/40">0{index + 1}</span>
               </button>
             ))}
@@ -589,6 +612,7 @@ function PublicFooter({
             <p className="col-span-2 mb-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-white/35">Explore Acremont</p>
             <button className="text-left transition-colors hover:text-white" onClick={() => onNavigate("strategies")}>Strategies</button>
             <button className="text-left transition-colors hover:text-white" onClick={() => onNavigate("about")}>About</button>
+            <button className="text-left transition-colors hover:text-white" onClick={() => onNavigate("community")}>Community</button>
             <button className="text-left transition-colors hover:text-white" onClick={() => onNavigate("contact")}>Contact</button>
             <a className="transition-colors hover:text-white" href="/privacy">Privacy policy</a>
             <a className="transition-colors hover:text-white" href="/notices">Notices</a>
@@ -965,7 +989,7 @@ function PublicHome({
             <div className="grid overflow-hidden rounded-2xl border border-white/12 lg:grid-cols-[1.35fr_.65fr]">
               <div className="relative min-h-[430px] overflow-hidden lg:min-h-[560px]">
                 <img
-                  alt={`${strategy.name} investment strategy`}
+                  alt={strategy.imageAlt}
                   className="absolute inset-0 h-full w-full object-cover transition-opacity duration-500"
                   key={strategy.image}
                   src={strategy.image}
@@ -1292,7 +1316,7 @@ function StrategiesPage({
               }`}
             >
               <img
-                alt={`${strategy.name} visual`}
+                alt={strategy.imageAlt}
                 className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 hover:scale-[1.02]"
                 src={strategy.image}
               />
@@ -1434,10 +1458,10 @@ function AboutPage({
           </div>
           <div className="space-y-5 text-base leading-8 text-ink/58">
             <p>
-              Henry Charles Investment, Mark Stone Finances, Ashbourne Capital Holdings, Northbridge Financial Holdings, Sterling Crest Group, Westhaven Capital Partners, and Mercado Investment are subsidiaries of Acremont.
+              {acremontSubsidiaries.join(", ")} are subsidiaries of Acremont.
             </p>
             <ul className="grid gap-3 sm:grid-cols-2">
-              {["Northbridge Financial Holdings", "Mercado Investment", "Henry Charles Investment", "Westhaven Capital Partners", "Mark Stone Finances", "Ashbourne Capital Holdings", "Sterling Crest Group"].map((company) => (
+              {acremontSubsidiaries.map((company) => (
                 <li className="rounded-xl border border-forest/10 bg-white/55 px-4 py-3 text-sm text-forest" key={company}>{company}</li>
               ))}
             </ul>
@@ -1446,6 +1470,87 @@ function AboutPage({
       </section>
 
       <TeamSection onNavigate={onNavigate} />
+    </PublicPageLayout>
+  )
+}
+
+function CommunityPage({ onLogin, onNavigate, onOpenAccount }: {
+  onLogin: () => void
+  onNavigate: (page: PublicPage) => void
+  onOpenAccount: () => void
+}) {
+  const foundationNames = [
+    "Cure the Kids Foundation",
+    "Together for Kids",
+    "The Wishing Tree Foundation",
+    "Open Arms Children’s Fund",
+    "Sunrise Kids Alliance",
+  ]
+
+  return (
+    <PublicPageLayout onLogin={onLogin} onNavigate={onNavigate} onOpenAccount={onOpenAccount}>
+      <section className="overflow-hidden bg-forest text-white">
+        <div className="site-shell grid gap-10 py-16 sm:py-20 lg:grid-cols-[1.1fr_.9fr] lg:items-center lg:gap-14 lg:py-24">
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-white/50">Our community</p>
+            <h1 className="mt-5 max-w-3xl font-display text-[clamp(3.2rem,6vw,6rem)] leading-[0.96] tracking-[-0.06em]">Investing in a brighter future for children.</h1>
+            <p className="mt-6 max-w-xl text-base leading-8 text-white/65 sm:text-lg">Acremont and its subsidiaries are collaborating with children’s foundations to help direct investment interest toward work that supports children and their futures.</p>
+          </div>
+          <figure className="relative min-h-[280px] overflow-hidden rounded-2xl sm:min-h-[360px] lg:min-h-[420px]">
+            <img
+              alt="Children sharing a book together"
+              className="absolute inset-0 h-full w-full object-cover"
+              src="https://images.unsplash.com/photo-1765223111660-cdf94396832a?auto=format&fit=crop&fm=jpg&q=85&w=1200"
+            />
+            <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-forest/55 via-transparent to-transparent" />
+            <figcaption className="absolute bottom-5 left-5 text-[10px] font-medium uppercase tracking-[0.14em] text-white/85">Building brighter futures together</figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <section className="site-shell grid gap-12 py-16 sm:py-20 lg:grid-cols-[.8fr_1.2fr] lg:py-24">
+        <div>
+          <p className="section-label">How the collaboration works</p>
+          <h2 className="mt-4 font-display text-3xl tracking-[-0.04em] text-forest sm:text-4xl">A share of investment interest supports children’s causes.</h2>
+        </div>
+        <div className="space-y-5 text-sm leading-7 text-ink/60 sm:text-base sm:leading-8">
+          <p>Under this collaboration between Acremont, its subsidiaries, and the participating foundations, investment interest will be directed to support their work for children and families.</p>
+          <p>Interest contributions are limited by a set maximum rate for each investment, stated in its applicable terms; that rate is a ceiling and will not be exceeded. Contributions come from investment interest. The invested principal remains part of the investor’s account and is not itself a charitable contribution. Returns are not guaranteed, so the amount of interest available may vary.</p>
+        </div>
+      </section>
+
+      <section className="bg-[#e9e5d9] py-16 sm:py-20 lg:py-24">
+        <div className="site-shell">
+          <div className="max-w-2xl">
+            <p className="section-label">Participating foundations</p>
+            <h2 className="mt-4 font-display text-3xl tracking-[-0.04em] text-forest sm:text-4xl">Working together for children.</h2>
+          </div>
+          <ul className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {foundationNames.map((name, index) => (
+              <li className="flex min-h-28 items-center gap-5 rounded-xl border border-forest/10 bg-white/60 p-5" key={name}>
+                <span className="text-xs font-semibold text-forest/35">{String(index + 1).padStart(2, "0")}</span>
+                <span className="font-display text-lg leading-6 text-forest">{name}</span>
+              </li>
+            ))}
+          </ul>
+          <div className="mt-14 border-t border-forest/10 pt-10">
+            <p className="section-label">Acremont group collaboration</p>
+            <h3 className="mt-4 font-display text-2xl tracking-[-0.035em] text-forest">Working together across the group.</h3>
+            <p className="mt-3 max-w-2xl text-sm leading-7 text-ink/55">The collaboration is carried out with Acremont’s subsidiary companies:</p>
+            <ul className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              {acremontSubsidiaries.map((name) => <li className="rounded-xl border border-forest/10 bg-white/55 px-4 py-4 text-sm text-forest" key={name}>{name}</li>)}
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section className="site-shell flex flex-col justify-between gap-6 py-16 sm:flex-row sm:items-center sm:py-20">
+        <div>
+          <p className="section-label">Learn more</p>
+          <h2 className="mt-3 font-display text-2xl tracking-[-0.035em] text-forest">Questions about the collaboration?</h2>
+        </div>
+        <Button onClick={() => onNavigate("contact")}>Contact our team <Icon name="arrow" size={16} /></Button>
+      </section>
     </PublicPageLayout>
   )
 }
@@ -2556,7 +2661,7 @@ function NoticesPage({ onLogin, onNavigate, onOpenAccount }: {
             <p className="mt-4 text-sm leading-7 text-ink/60">Acremont’s subsidiary companies extend its work across investment, financial holdings, and capital partnerships. Together, they form part of the group’s broader investment platform.</p>
             <p className="mt-4 text-xs font-medium text-ink/45">The following companies are subsidiaries of Acremont:</p>
             <ul className="mt-5 space-y-2 text-sm text-forest">
-              {["Sterling Crest Group", "Ashbourne Capital Holdings", "Mark Stone Finances", "Mercado Investment", "Henry Charles Investment", "Northbridge Financial Holdings", "Westhaven Capital Partners"].map((company) => <li className="rounded-lg border border-forest/10 px-4 py-3" key={company}>{company}</li>)}
+              {acremontSubsidiaries.map((company) => <li className="rounded-lg border border-forest/10 px-4 py-3" key={company}>{company}</li>)}
             </ul>
           </article>
           <div className="space-y-6">
@@ -5944,6 +6049,7 @@ function Dashboard({
             ["Home", "/"],
             ["Strategies", "/strategies"],
             ["About", "/about"],
+            ["Community", "/community"],
             ["Contact", "/contact"],
           ] as const).map(([label, href]) => (
             <button
@@ -6782,6 +6888,8 @@ function AppContent() {
         <StrategiesPage {...publicActions} />
       ) : pathname === "/about" ? (
         <AboutPage {...publicActions} />
+      ) : pathname === "/community" ? (
+        <CommunityPage {...publicActions} />
       ) : pathname === "/contact" ? (
         <ContactPage {...publicActions} />
       ) : pathname === "/privacy" ? (

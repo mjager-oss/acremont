@@ -1,4 +1,4 @@
-export type PublicPage = "home" | "strategies" | "about" | "contact"
+export type PublicPage = "home" | "strategies" | "about" | "community" | "contact"
 export type DashboardPage = "overview" | "invest" | "withdraw" | "support" | "settings" | "review"
 
 export function publicPath(page: PublicPage): string {
